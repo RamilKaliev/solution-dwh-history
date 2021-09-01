@@ -1,0 +1,13 @@
+project/target/
+target/
+**/target/
+
+.idea/
+.idea_modules/
+
+*.DS_Store
+*.iml
+
+.bsp
+
+spark-warehouse
