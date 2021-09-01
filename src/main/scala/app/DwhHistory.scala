@@ -145,20 +145,21 @@ object DwhHistory extends DwhHistoryUtils {
     restoredSaDF.cache()
     restoredSaDF.show(false)
 
-    // restored JOIN between tables
+    // JOIN between tables
     logger.info(" === JOIN === ")
-    val join1 = restoredAccountsDF.as("a")
+
+    // accounts with cards
+    restoredAccountsDF.as("a")
       .join(
         restoredCardsDF.as("c"),
-        col("a.card_id") === col("c.card_id") &&
-          (col("a.is_current") === 1)  && (col("c.is_current") === 1)
-      )
-    val join2 = join1.as("j").join(
+        col("a.card_id") === col("c.card_id") && (col("a.eff_from") === col("c.eff_from"))
+      ).show( false)
+
+    // accounts with savings_accounts
+    restoredAccountsDF.as("a").join(
       restoredSaDF.as("sa"),
-      col("j.savings_account_id") === col("sa.savings_account_id")
-        && (col("sa.is_current") === 1)
-    )
-    join2.show(false)
+      col("a.savings_account_id") === col("sa.savings_account_id") && (col("a.eff_from") === col("sa.eff_from"))
+    ).show( false)
 
     logger.info(" === SCD Type 2 has FINISHED === ")
     logger.info(" =============================== ")

@@ -1,6 +1,6 @@
 ## Tasks
 
-[Initial tasks are here](src/main/resources/README.md)
+[Initial tasks are here](README.md)
 
 To do the following tasks, you probably gonna need some kinds data processing library in your own choice of programming language.
 `pandas`, a data processing library in Python, is recommended due to ease of use and simplicity. However, you are free to choose
@@ -166,18 +166,33 @@ The main idea is to use cascading update of the initial state of the record by i
 
 ### `[Task 2]` That how it is going to look like:
 ```html
-=== JOIN ===
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+-----------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
-|id        |data                                                                                                                                                          |eff_from           |eff_to             |is_current|card_id|savings_account_id|id        |data                                                                                                 |eff_from           |eff_to             |is_current|card_id|id         |data                                                                                      |eff_from           |eff_to             |is_current|savings_account_id|
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+-----------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
-|a1globalid|{"name":"Anthony","phone_number":"87654321","email":"anthony@anotherbank.com","savings_account_id":"sa1","account_id":"a1","card_id":"c2","address":"Jakarta"}|2020-01-16 11:30:00|2999-12-31 00:00:00|1         |c2     |sa1               |c2globalid|{"card_number":"12123434","credit_used":37000,"status":"ACTIVE","card_id":"c2","monthly_limit":70000}|2020-01-18 18:30:00|2999-12-31 00:00:00|1         |c2     |sa1globalid|{"balance":33000,"interest_rate_percent":4.0,"savings_account_id":"sa1","status":"ACTIVE"}|2020-01-20 10:30:00|2999-12-31 00:00:00|1         |sa1               |
-+----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+-----------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
+=== JOINs ===
+
+==== ACCOUNTS to CARDS (on card_id and eff_from) ====
++----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+--------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+
+|id        |data                                                                                                                                                          |eff_from           |eff_to             |is_current|card_id|savings_account_id|id        |data                                                                                              |eff_from           |eff_to             |is_current|card_id|
++----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+--------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+
+|a1globalid|{"name":"Anthony","phone_number":"87654321","email":"anthony@anotherbank.com","savings_account_id":"sa1","account_id":"a1","card_id":"c1","address":"Jakarta"}|2020-01-02 04:00:00|2020-01-15 12:01:00|0         |c1     |sa1               |c1globalid|{"card_number":"11112222","credit_used":0,"status":"PENDING","card_id":"c1","monthly_limit":30000}|2020-01-02 04:00:00|2020-01-04 20:30:00|0         |c1     |
+|a1globalid|{"name":"Anthony","phone_number":"87654321","email":"anthony@anotherbank.com","savings_account_id":"sa1","account_id":"a1","card_id":"c2","address":"Jakarta"}|2020-01-16 11:30:00|2999-12-31 00:00:00|1         |c2     |sa1               |c2globalid|{"card_number":"12123434","credit_used":0,"status":"PENDING","card_id":"c2","monthly_limit":70000}|2020-01-16 11:30:00|2020-01-18 01:00:00|0         |c2     |
++----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+----------+--------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+
+
+==== ACCOUNTS to SAVINGS_ACCOUNTS (on savings_accounts_id and eff_from) ====
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
+|id        |data                                                                                                                                                        |eff_from           |eff_to             |is_current|card_id|savings_account_id|id         |data                                                                                      |eff_from           |eff_to             |is_current|savings_account_id|
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
+|a1globalid|{"name":"Anthony","phone_number":"87654321","email":"anthony@somebank.com","savings_account_id":"sa1","account_id":"a1","address":"New York"}               |2020-01-01 18:00:00|2020-01-01 19:00:00|0         |null   |sa1               |sa1globalid|{"balance":0,"interest_rate_percent":1.5,"savings_account_id":"sa1","status":"ACTIVE"}    |2020-01-01 18:00:00|2020-01-02 12:00:00|0         |sa1               |
+|a1globalid|{"name":"Anthony","phone_number":"87654321","email":"anthony@anotherbank.com","savings_account_id":"sa1","account_id":"a1","card_id":"","address":"Jakarta"}|2020-01-15 12:01:00|2020-01-16 11:30:00|0         |       |sa1               |sa1globalid|{"balance":21000,"interest_rate_percent":1.5,"savings_account_id":"sa1","status":"ACTIVE"}|2020-01-15 12:01:00|2020-01-18 01:01:00|0         |sa1               |
++----------+------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------+-------------------+----------+-------+------------------+-----------+------------------------------------------------------------------------------------------+-------------------+-------------------+----------+------------------+
 ```
 
 ### `[Task 3]` Here are the calculations:
 
 We have 24 records across all 3 tables.
 If we consider records appearance in more than one table at the same time as a transaction then we have 20 transactions:
-- 3 transactions are about - 3 records in CARDS table (c1 card OPENED, c1 card CLOSED, c2 card OPENED) + account updated 3 times;
-- 1 transaction is about - 1 record in SAVINGS_ACCOUNTS + account updated 1 time;
-- 16 independent transactions within each table in total. 
+- 2 transactions are about cards opening - 2 records in CARDS table (c1 card OPENED, c2 card OPENED) + ACCOUNTS updated 2 times -> 4 records;
+- 1 transaction is about savings_account opening - 1 record in SAVINGS_ACCOUNTS + ACCOUNTS updated 1 time -> 2 records;
+- 1 transaction is about cards closing - 1 record in ACCOUNTS + 1 record in SAVINGS_ACCOUNTS -> 2 records 
+- 16 independent transactions within each table in total.
+
+Another assumption is that when c1 card was closed and account with savings_accounts were impacted - should be considered as 1 transaction (even if there is 1 minute difference) 
+then we have 15 independent transactions and 24 records.
