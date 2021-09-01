@@ -1,6 +1,6 @@
 ## Tasks
 
-[Initial tasks are here](README.md)
+[Initial tasks are here](initial_readme.md)
 
 To do the following tasks, you probably gonna need some kinds data processing library in your own choice of programming language.
 `pandas`, a data processing library in Python, is recommended due to ease of use and simplicity. However, you are free to choose
